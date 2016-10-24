@@ -1,14 +1,5 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-#*******************************************
-# Name:        	server.py
-# Author:      	Ryou.W
-# Created:     	18/10/2016
-# Last Date:   	18/10/2016
-# Note:
-# Issue:
-# Reference:http://flask-docs-ja.readthedocs.io/en/latest/quickstart/
-#*******************************************
 
 import os
 import socket
@@ -33,7 +24,28 @@ class Tweet(Resource):
 		print(message+"!!!!!")
 		# ここにツイートのコードを書く
 
+class Line(Resource):
+	def post(self):
+		if request.headers['Content-Type'] == 'application/json':
+			message = request.json['message']
+			self.lineNotify(message)
+		return message
+
+	def lineNotify(self, message):
+		s = requests.session()
+		url = "https://notify-api.line.me/api/notify"
+
+		data = {
+			"message": message,
+		}
+		# headers = {'Authorization': 'Bearer '+'[PUT LINE TOKEN]'}
+		r = s.post(url, data=data, headers=headers)
+		text = r.text
+		text = json.loads(text)
+		print(text)
+
 api.add_resource(Tweet, '/api/tweet')
+api.add_resource(Line, '/api/line')
 
 if __name__ == '__main__':
 	ip = socket.gethostbyname(socket.gethostname())
