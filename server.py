@@ -15,6 +15,10 @@ from datetime import datetime as dt
 app = Flask(__name__)
 api = Api(app)
 
+class Response(Resource):
+	def get(self):
+		return "Server Connected"
+
 class Tweet(Resource):
 	def post(self):
 		if request.headers['Content-Type'] == 'application/json':
@@ -51,12 +55,13 @@ class Line(Resource):
 		data = {
 			"message": message,
 		}
-		# headers = {'Authorization': 'Bearer '+'[PUT LINE TOKEN]'}
+		headers = {'Authorization': 'Bearer '+'[PUT LINE TOKEN]'}
 		r = s.post(url, data=data, headers=headers)
 		text = r.text
 		text = json.loads(text)
 		print(text)
 
+api.add_resource(Response, '/')
 api.add_resource(Tweet, '/api/tweet')
 api.add_resource(Line, '/api/line')
 
