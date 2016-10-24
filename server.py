@@ -9,6 +9,8 @@ import json
 from flask import Flask, request, redirect, url_for, abort, jsonify
 from flask_restful import Resource, Api
 from werkzeug.utils import secure_filename
+from requests_oauthlib import OAuth1Session
+from datetime import datetime as dt
 
 app = Flask(__name__)
 api = Api(app)
@@ -21,7 +23,18 @@ class Tweet(Resource):
 		return message
 
 	def tweet(self, message):
-		print(message+"!!!!!")
+
+		consumer_key = ""
+		consumer_secret = ""
+		access_token = ""
+		access_secret = ""
+
+		twitter = OAuth1Session(consumer_key,consumer_secret,access_token,access_secret)
+
+		now = dt.now().strftime('%m/%d %H:%M:%S')
+		params = {"status": message + "\n\n" + now}
+		req = twitter.post("https://api.twitter.com/1.1/statuses/update.json",params = params)
+		#print(message+"!!!!!")
 		# ここにツイートのコードを書く
 
 class Line(Resource):
