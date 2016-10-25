@@ -22,12 +22,11 @@ class Response(Resource):
 class Tweet(Resource):
 	def post(self):
 		if request.headers['Content-Type'] == 'application/json':
-			message = request.json['message']
-			self.tweet(message)
-		return message
+			self.message = request.json['message']
+			self.tweet()
+		return self.message
 
-	def tweet(self, message):
-
+	def tweet(self):
 		consumer_key = ""
 		consumer_secret = ""
 		access_token = ""
@@ -36,24 +35,22 @@ class Tweet(Resource):
 		twitter = OAuth1Session(consumer_key,consumer_secret,access_token,access_secret)
 
 		now = dt.now().strftime('%m/%d %H:%M:%S')
-		params = {"status": message + "\n\n" + now}
+		params = {"status": self.message + "\n\n" + now}
 		req = twitter.post("https://api.twitter.com/1.1/statuses/update.json",params = params)
-		#print(message+"!!!!!")
-		# ここにツイートのコードを書く
 
 class Line(Resource):
 	def post(self):
 		if request.headers['Content-Type'] == 'application/json':
-			message = request.json['message']
-			self.lineNotify(message)
-		return message
+			self.message = request.json['message']
+			self.lineNotify()
+		return self.message
 
-	def lineNotify(self, message):
+	def lineNotify(self):
 		s = requests.session()
 		url = "https://notify-api.line.me/api/notify"
 
 		data = {
-			"message": message,
+			"message": self.message,
 		}
 		headers = {'Authorization': 'Bearer '+'[PUT LINE TOKEN]'}
 		r = s.post(url, data=data, headers=headers)
