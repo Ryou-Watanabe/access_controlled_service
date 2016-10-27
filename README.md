@@ -4,6 +4,8 @@
 
 * /api/tweetでツイート可能
 * /api/lineでline通知可能
+* /api/slackでbot通知可能
+* /でサーバとのConnection確認可能
 
 ##raspi_sender.py
 rasbperry piからサーバに現在の人数をPOSTする
