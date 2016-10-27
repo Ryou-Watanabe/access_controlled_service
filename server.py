@@ -27,10 +27,10 @@ class Tweet(Resource):
 		return self.message
 
 	def tweet(self):
-		consumer_key = ""
-		consumer_secret = ""
-		access_token = ""
-		access_secret = ""
+		consumer_key = " "
+		consumer_secret = " "
+		access_token = " "
+		access_secret = " "
 
 		twitter = OAuth1Session(consumer_key,consumer_secret,access_token,access_secret)
 
@@ -58,9 +58,29 @@ class Line(Resource):
 		text = json.loads(text)
 		print(text)
 
+class Slack(Resource):
+	def post(self):
+		if request.headers['Content-Type'] == 'application/json':
+			self.message = request.json['message']
+			self.slack()
+		return self.message
+
+	def slack(self):
+		now = dt.now().strftime('%m/%d %H:%M:%S')
+		data = {
+			"text": self.message + "\n\n" + now,
+			"username":'bot_desuyo',
+			"icon_emoji":"grin",
+			"channel":'#bot_room',
+			}
+		url = " "
+		req = requests.post(url, data=json.dumps(data))
+
+
 api.add_resource(Response, '/')
 api.add_resource(Tweet, '/api/tweet')
 api.add_resource(Line, '/api/line')
+api.add_resource(Slack, '/api/slack')
 
 if __name__ == '__main__':
 	ip = socket.gethostbyname(socket.gethostname())
