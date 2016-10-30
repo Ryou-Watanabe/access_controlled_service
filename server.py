@@ -15,6 +15,8 @@ from datetime import datetime as dt
 app = Flask(__name__)
 api = Api(app)
 
+number = 0
+
 class Response(Resource):
 	def get(self):
 		return "Server Connected"
@@ -76,11 +78,38 @@ class Slack(Resource):
 		url = " "
 		req = requests.post(url, data=json.dumps(data))
 
+class CalcPeople(Resource):
+	def __init__(self):
+		global number
+
+	def get(self):
+		global number
+		return number
+
+	def post(self):
+		if request.headers['Content-Type'] == 'application/json':
+			self.message = request.json['message']
+			number = self.calc()
+		return number
+
+	def calc(self):
+		global number
+		if self.message == "in":
+			number += 1
+		elif self.message == "out":
+			number -= 1
+		elif self.message == "init":
+			number = 0
+		print("now OKLAB member : %s"%number)
+		return number
+
+
 
 api.add_resource(Response, '/')
-api.add_resource(Tweet, '/api/tweet')
+# api.add_resource(Tweet, '/api/tweet')
 api.add_resource(Line, '/api/line')
-api.add_resource(Slack, '/api/slack')
+# api.add_resource(Slack, '/api/slack')
+api.add_resource(CalcPeople, '/api/calc')
 
 if __name__ == '__main__':
 	ip = socket.gethostbyname(socket.gethostname())
