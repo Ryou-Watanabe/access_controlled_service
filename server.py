@@ -18,56 +18,33 @@ api = Api(app)
 number = 0
 
 class Response(Resource):
+	def __init__(self):
+		global number
+
 	def get(self):
-		return "Server Connected"
+		global number
+		return "now OKLAB member : %s"%number
 
-class Tweet(Resource):
+	def post(self):
+		global number
+		if request.headers['Content-Type'] == 'application/json':
+			self.message = request.json['message']
+			if(self.message == "in"):
+				number += 1
+			elif(self.message == "out"):
+				number -= 1
+		return number
+
+
+class SNS(Resource):
 	def post(self):
 		if request.headers['Content-Type'] == 'application/json':
 			self.message = request.json['message']
-			self.tweet()
-		return self.message
-
-	def tweet(self):
-		consumer_key = " "
-		consumer_secret = " "
-		access_token = " "
-		access_secret = " "
-
-		twitter = OAuth1Session(consumer_key,consumer_secret,access_token,access_secret)
-
-		now = dt.now().strftime('%m/%d %H:%M:%S')
-		params = {"status": self.message + "\n\n" + now}
-		req = twitter.post("https://api.twitter.com/1.1/statuses/update.json",params = params)
-
-class Line(Resource):
-	def post(self):
-		if request.headers['Content-Type'] == 'application/json':
-			self.message = request.json['message']
-			self.lineNotify()
-		return self.message
-
-	def lineNotify(self):
-		s = requests.session()
-		url = "https://notify-api.line.me/api/notify"
-
-		data = {
-			"message": self.message,
-		}
-		headers = {'Authorization': 'Bearer '+'[PUT LINE TOKEN]'}
-		r = s.post(url, data=data, headers=headers)
-		text = r.text
-		text = json.loads(text)
-		print(text)
-
-class Slack(Resource):
-	def post(self):
-		if request.headers['Content-Type'] == 'application/json':
-			self.message = request.json['message']
-			self.slack()
+			self.postAll()
 		return self.message
 
 	def slack(self):
+		print(self.message)
 		now = dt.now().strftime('%m/%d %H:%M:%S')
 		data = {
 			"text": self.message + "\n\n" + now,
@@ -75,21 +52,52 @@ class Slack(Resource):
 			"icon_emoji":"grin",
 			"channel":'#bot_room',
 			}
-		url = " "
+		url = ""
 		req = requests.post(url, data=json.dumps(data))
 
-class CalcPeople(Resource):
-	def __init__(self):
-		global number
+	def lineNotify(self):
+		print(self.message)
+		s = requests.session()
+		url = "https://notify-api.line.me/api/notify"
 
-	def get(self):
-		global number
-		return number
+		data = {
+			"message": self.message,
+		}
+		headers = {'Authorization': 'Bearer '+''}
+		r = s.post(url, data=data, headers=headers)
+		text = r.text
+		text = json.loads(text)
+		print(text)
 
+	def tweet(self):
+		print(self.message)
+		consumer_key = ""
+		consumer_secret = ""
+		access_token = ""
+		access_secret = ""
+
+		twitter = OAuth1Session(consumer_key,consumer_secret,access_token,access_secret)
+
+		now = dt.now().strftime('%m/%d %H:%M:%S')
+		params = {"status": self.message + "\n\n" + now}
+		req = twitter.post("https://api.twitter.com/1.1/statuses/update.json",params = params)
+
+	def postAll(self):
+		pass
+		# self.tweet()
+		# self.slack()
+		# self.lineNotify()
+
+class Post(Resource):
 	def post(self):
 		if request.headers['Content-Type'] == 'application/json':
 			self.message = request.json['message']
+
 			number = self.calc()
+			s=SNS()
+			s.message = self.message
+			s.postAll()
+			print(self.message)
 		return number
 
 	def calc(self):
@@ -100,18 +108,16 @@ class CalcPeople(Resource):
 			number -= 1
 		elif self.message == "init":
 			number = 0
-		print("now OKLAB member : %s"%number)
+		self.message = "now OKLAB member : %s"%number
 		return number
 
 
-
 api.add_resource(Response, '/')
-# api.add_resource(Tweet, '/api/tweet')
-api.add_resource(Line, '/api/line')
-# api.add_resource(Slack, '/api/slack')
-api.add_resource(CalcPeople, '/api/calc')
+api.add_resource(SNS, '/api/sns')
+api.add_resource(Post, '/api/post')
 
 if __name__ == '__main__':
-	ip = socket.gethostbyname(socket.gethostname())
+	# ip = socket.gethostbyname(socket.gethostname())
+	ip = "127.0.0.1"
 	app.debug=True
 	app.run(host=ip)
